@@ -1,7 +1,8 @@
 //! Byte-pair (**digraph**) histograms for binary visualization: map each pair
 //! `(b[i], b[i+1])` to a 256×256 grid (first byte = X, second = Y) and count
 //! occurrences. [`render::render_ascii`](crate::render::render_ascii) draws a
-//! downsampled terminal heatmap; optional `image` / `svg` features add PNG/SVG.
+//! downsampled terminal heatmap (tone via [`AsciiParams::ramp`](crate::render::AsciiParams));
+//! PNG/SVG use [`HeatmapPalette`](crate::HeatmapPalette). Enable `image` / `svg` for those backends.
 //!
 //! # Example
 //!
@@ -28,6 +29,8 @@ pub mod digraph;
 pub mod normalize;
 pub mod palette;
 
+pub use palette::HeatmapPalette;
+
 pub mod render;
 
 #[cfg(feature = "image")]
@@ -46,6 +49,51 @@ mod tests {
         let bytes = std::fs::read(&path).expect("tests/data/sample.bin missing");
         let d = Digraph::from_bytes(&bytes);
         assert!(d.max_count() > 0, "fixture should contain repeated bigrams");
+    }
+
+    #[test]
+    fn format_fixtures_have_magic_and_bigrams() {
+        use std::path::PathBuf;
+
+        let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/data");
+        let cases: &[(&str, &[u8])] = &[
+            ("pe_like.bin", b"MZ"),
+            ("elf_like.bin", b"\x7fELF"),
+            ("zip_like.bin", b"PK\x03\x04"),
+            ("png_like.bin", b"\x89PNG\r\n\x1a\n"),
+            ("jpeg_like.bin", b"\xFF\xD8\xFF"),
+            ("gzip_like.bin", b"\x1F\x8B\x08"),
+        ];
+        for (name, magic) in cases {
+            let path = dir.join(name);
+            let bytes = std::fs::read(&path).unwrap_or_else(|e| panic!("read {name}: {e}"));
+            assert!(
+                bytes.starts_with(magic),
+                "{name} should start with format magic"
+            );
+            let d = Digraph::from_bytes(&bytes);
+            assert!(d.max_count() > 0, "{name} should contain repeated bigrams");
+        }
+    }
+
+    #[test]
+    fn heatmap_palette_midpoints_differ() {
+        let t = 0.5_f32;
+        assert_ne!(
+            HeatmapPalette::Magma.rgba(t),
+            HeatmapPalette::Viridis.rgba(t)
+        );
+        assert_ne!(HeatmapPalette::Magma.rgba(t), HeatmapPalette::Gray.rgba(t));
+    }
+
+    #[test]
+    fn matrix_palette_dark_to_neon_green() {
+        let dark = HeatmapPalette::Matrix.rgba(0.0);
+        let bright = HeatmapPalette::Matrix.rgba(1.0);
+        assert!(dark[1] < 32, "dark end should stay low-green");
+        assert!(bright[1] > 200, "bright end should be neo green");
+        assert!(bright[1] as i32 > bright[0] as i32 * 3);
+        assert!(bright[1] as i32 > bright[2] as i32 * 2);
     }
 
     #[test]

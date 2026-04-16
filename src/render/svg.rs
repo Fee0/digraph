@@ -1,6 +1,6 @@
 use crate::digraph::Digraph;
 use crate::normalize::Scale;
-use crate::palette;
+use crate::palette::HeatmapPalette;
 use std::fmt::Write as _;
 
 /// SVG heatmap: one `<rect>` per non-zero cell to keep files smaller.
@@ -8,7 +8,7 @@ use std::fmt::Write as _;
 pub struct SvgParams {
     pub cell_size: f32,
     pub scale: Scale,
-    pub viridis: bool,
+    pub palette: HeatmapPalette,
 }
 
 impl Default for SvgParams {
@@ -16,7 +16,7 @@ impl Default for SvgParams {
         Self {
             cell_size: 2.0,
             scale: Scale::Log1p,
-            viridis: false,
+            palette: HeatmapPalette::default(),
         }
     }
 }
@@ -45,11 +45,7 @@ pub fn render_svg_heatmap(digraph: &Digraph, params: SvgParams) -> String {
                 continue;
             }
             let t = params.scale.map(v, max, clip);
-            let [r, g, b, a] = if params.viridis {
-                palette::viridis(t)
-            } else {
-                palette::magma(t)
-            };
+            let [r, g, b, a] = params.palette.rgba(t);
             let xf = x as f32 * cs;
             let yf = y as f32 * cs;
             let opacity = (a as f32) / 255.0;

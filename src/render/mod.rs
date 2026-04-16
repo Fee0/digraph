@@ -1,8 +1,11 @@
 //! Render targets: ASCII (always), optional PNG / SVG.
+//!
+//! Raster and SVG use [`crate::palette::HeatmapPalette`] via [`RenderParams`](crate::render::RenderParams) and [`SvgParams`](crate::render::SvgParams).
 
 mod ascii;
 #[cfg(feature = "image")]
 mod image_png;
+pub use crate::palette::HeatmapPalette;
 pub use ascii::{render_ascii, AsciiParams};
 
 #[cfg(feature = "image")]

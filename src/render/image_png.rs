@@ -1,7 +1,7 @@
 use crate::digraph::Digraph;
 use crate::error::RenderError;
 use crate::normalize::Scale;
-use crate::palette;
+use crate::palette::HeatmapPalette;
 use image::{ImageBuffer, Rgba, RgbaImage};
 
 /// Controls upscaling and color mapping for raster output.
@@ -10,8 +10,7 @@ pub struct RenderParams {
     /// Pixels per axis cell (image side = 256 * cell_pixels).
     pub cell_pixels: u32,
     pub scale: Scale,
-    /// If true, use [`palette::viridis`]; otherwise [`palette::magma`].
-    pub viridis: bool,
+    pub palette: HeatmapPalette,
 }
 
 impl Default for RenderParams {
@@ -19,7 +18,7 @@ impl Default for RenderParams {
         Self {
             cell_pixels: 2,
             scale: Scale::Log1p,
-            viridis: false,
+            palette: HeatmapPalette::default(),
         }
     }
 }
@@ -36,11 +35,7 @@ pub fn render_rgba(digraph: &Digraph, params: RenderParams) -> RgbaImage {
         for x in 0u16..256 {
             let v = digraph.get(x as u8, y as u8);
             let t = params.scale.map(v, max, clip);
-            let px = if params.viridis {
-                palette::viridis(t)
-            } else {
-                palette::magma(t)
-            };
+            let px = params.palette.rgba(t);
             let rgba = Rgba(px);
             let xi = x as usize * cell;
             let yi = y as usize * cell;

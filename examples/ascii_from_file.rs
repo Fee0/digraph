@@ -1,6 +1,8 @@
 //! Print a downsampled ASCII digraph heatmap for a binary file.
 //!
-//! Default input is `tests/data/sample.bin` in this repository.
+//! Default input is `tests/data/sample.bin`. Other format-shaped fixtures live in
+//! `tests/data/` (e.g. `pe_like.bin`, `elf_like.bin`, `zip_like.bin`, `png_like.bin`,
+//! `jpeg_like.bin`, `gzip_like.bin`); regenerate all via `python scripts/gen_test_binaries.py`.
 //!
 //! ```text
 //! cargo run --example ascii_from_file
