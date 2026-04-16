@@ -1,6 +1,7 @@
 //! Byte-pair (**digraph**) histograms for binary visualization: map each pair
 //! `(b[i], b[i+1])` to a 256×256 grid (first byte = X, second = Y) and count
-//! occurrences. Optional `image` / `svg` features render heatmaps.
+//! occurrences. [`render::render_ascii`](crate::render::render_ascii) draws a
+//! downsampled terminal heatmap; optional `image` / `svg` features add PNG/SVG.
 //!
 //! # Example
 //!
@@ -27,7 +28,6 @@ pub mod digraph;
 pub mod normalize;
 pub mod palette;
 
-#[cfg(any(feature = "image", feature = "svg"))]
 pub mod render;
 
 #[cfg(feature = "image")]
@@ -46,6 +46,33 @@ mod tests {
         let bytes = std::fs::read(&path).expect("tests/data/sample.bin missing");
         let d = Digraph::from_bytes(&bytes);
         assert!(d.max_count() > 0, "fixture should contain repeated bigrams");
+    }
+
+    #[test]
+    fn ascii_empty_is_dim() {
+        let d = Digraph::empty();
+        let s = d.to_ascii(crate::render::AsciiParams {
+            cols: 2,
+            rows: 2,
+            ramp: ".#".to_string(),
+            ..crate::render::AsciiParams::default()
+        });
+        assert_eq!(s, "..\n..\n");
+    }
+
+    #[test]
+    fn ascii_grid_shape_and_bright_cell() {
+        let d = Digraph::from_bytes_with_mode(&[1, 2, 1, 2], Mode::Overlapping);
+        let s = d.to_ascii(crate::render::AsciiParams {
+            cols: 4,
+            rows: 2,
+            scale: crate::normalize::Scale::Linear,
+            ramp: ".@".to_string(),
+        });
+        let lines: Vec<&str> = s.lines().collect();
+        assert_eq!(lines.len(), 2);
+        assert!(lines.iter().all(|line| line.len() == 4));
+        assert!(s.contains('@'));
     }
 
     #[test]

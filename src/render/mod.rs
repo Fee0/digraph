@@ -1,7 +1,10 @@
-//! Optional render targets (PNG / SVG).
+//! Render targets: ASCII (always), optional PNG / SVG.
 
+mod ascii;
 #[cfg(feature = "image")]
 mod image_png;
+pub use ascii::{render_ascii, AsciiParams};
+
 #[cfg(feature = "image")]
 pub use image_png::{render_png, render_rgba, RenderParams};
 

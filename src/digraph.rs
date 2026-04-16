@@ -106,6 +106,11 @@ impl Digraph {
     pub fn refresh_max_count(&mut self) {
         self.max_count = self.counts.iter().copied().max().unwrap_or(0);
     }
+
+    /// Renders a downsampled ASCII heatmap (see [`crate::render::AsciiParams`]).
+    pub fn to_ascii(&self, params: crate::render::AsciiParams) -> String {
+        crate::render::render_ascii(self, params)
+    }
 }
 
 #[cfg(feature = "image")]
