@@ -1,5 +1,7 @@
 //! Simple smooth heatmap gradients (matplotlib "magma"-like).
 
+use core::fmt;
+
 /// Named color map for raster and SVG digraph output.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Default)]
 pub enum HeatmapPalette {
@@ -8,6 +10,18 @@ pub enum HeatmapPalette {
     Gray,
     #[default]
     Matrix,
+}
+
+impl fmt::Display for HeatmapPalette {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let s = match self {
+            Self::Magma => "magma",
+            Self::Viridis => "viridis",
+            Self::Gray => "gray",
+            Self::Matrix => "matrix",
+        };
+        f.write_str(s)
+    }
 }
 
 impl HeatmapPalette {
@@ -103,4 +117,29 @@ pub fn matrix(t: f32) -> [u8; 4] {
     let g = lerp(6.0, 255.0, u);
     let b = lerp(2.0, 78.0, u);
     [r as u8, g as u8, b as u8, 255]
+}
+
+#[cfg(test)]
+mod tests {
+    use super::HeatmapPalette;
+
+    #[test]
+    fn heatmap_palette_midpoints_differ() {
+        let t = 0.5_f32;
+        assert_ne!(
+            HeatmapPalette::Magma.rgba(t),
+            HeatmapPalette::Viridis.rgba(t)
+        );
+        assert_ne!(HeatmapPalette::Magma.rgba(t), HeatmapPalette::Gray.rgba(t));
+    }
+
+    #[test]
+    fn matrix_palette_dark_to_neon_green() {
+        let dark = HeatmapPalette::Matrix.rgba(0.0);
+        let bright = HeatmapPalette::Matrix.rgba(1.0);
+        assert!(dark[1] < 32, "dark end should stay low-green");
+        assert!(bright[1] > 200, "bright end should be neo green");
+        assert!(bright[1] as i32 > bright[0] as i32 * 3);
+        assert!(bright[1] as i32 > bright[2] as i32 * 2);
+    }
 }

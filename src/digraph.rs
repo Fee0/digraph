@@ -1,6 +1,7 @@
 //! Core digraph type and construction.
 
 use crate::accumulate::{self, StreamState};
+use std::fmt;
 use std::io::{Read, Result as IoResult};
 
 /// How consecutive bytes are grouped into pairs.
@@ -13,7 +14,18 @@ pub enum Mode {
     NonOverlapping,
 }
 
-/// 256×256 histogram of byte bigrams (first byte = X, second = Y).
+impl fmt::Display for Mode {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Mode::Overlapping => f.write_str("overlapping"),
+            Mode::NonOverlapping => f.write_str("non-overlapping"),
+        }
+    }
+}
+
+/// 256×256 histogram of byte bigrams: [`Digraph::get`](Digraph::get)`(x, y)` counts
+/// pairs with first byte `x` and second byte `y`. Raster/SVG/ASCII place that cell at
+/// image column `y` and row `x` (CantorDust two-tuple layout).
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Digraph {
@@ -111,6 +123,11 @@ impl Digraph {
     pub fn to_ascii(&self, params: crate::render::AsciiParams) -> String {
         crate::render::render_ascii(self, params)
     }
+
+    /// Renders the heatmap as raw RGBA8 pixels (see [`crate::render::RgbaPixmap`]).
+    pub fn to_rgba_pixels(&self, params: crate::render::RenderParams) -> crate::render::RgbaPixmap {
+        crate::render::render_rgba_pixels(self, params)
+    }
 }
 
 #[cfg(feature = "image")]
@@ -168,5 +185,64 @@ impl DigraphBuilder {
 
     pub fn digraph_ref(&self) -> &Digraph {
         &self.digraph
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{Digraph, DigraphBuilder, Mode};
+
+    #[test]
+    fn overlapping_pairs() {
+        let d = Digraph::from_bytes_with_mode(&[10, 20, 10, 20], Mode::Overlapping);
+        assert_eq!(d.get(10, 20), 2);
+        assert_eq!(d.get(20, 10), 1);
+    }
+
+    #[test]
+    fn non_overlapping_pairs() {
+        let d = Digraph::from_bytes_with_mode(&[1, 2, 3, 4, 5], Mode::NonOverlapping);
+        assert_eq!(d.get(1, 2), 1);
+        assert_eq!(d.get(3, 4), 1);
+        assert_eq!(d.get(2, 3), 0);
+    }
+
+    #[test]
+    fn empty_and_singleton() {
+        let d = Digraph::from_bytes(&[]);
+        assert_eq!(d.max_count(), 0);
+        let d = Digraph::from_bytes(&[7]);
+        assert_eq!(d.max_count(), 0);
+    }
+
+    #[test]
+    fn builder_spans_chunks() {
+        let mut b = DigraphBuilder::new(Mode::Overlapping);
+        b.push_bytes(&[0, 1]);
+        b.push_bytes(&[1, 2]);
+        let d = b.finish();
+        assert_eq!(d.get(0, 1), 1);
+        assert_eq!(d.get(1, 1), 1);
+        assert_eq!(d.get(1, 2), 1);
+    }
+
+    #[test]
+    fn builder_non_overlap_across_chunks() {
+        let mut b = DigraphBuilder::new(Mode::NonOverlapping);
+        b.push_bytes(&[1, 2, 3]);
+        b.push_bytes(&[4, 5]);
+        let d = b.finish();
+        assert_eq!(d.get(1, 2), 1);
+        assert_eq!(d.get(3, 4), 1);
+        assert_eq!(d.get(2, 3), 0);
+    }
+
+    #[test]
+    fn add_bytes_independent() {
+        let mut d = Digraph::empty();
+        d.add_bytes_with_mode(&[1, 2], Mode::Overlapping);
+        d.add_bytes_with_mode(&[2, 3], Mode::Overlapping);
+        assert_eq!(d.get(1, 2), 1);
+        assert_eq!(d.get(2, 3), 1);
     }
 }

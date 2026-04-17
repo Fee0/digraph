@@ -1,6 +1,7 @@
 //! Scaling counts to display intensities.
 
 use crate::digraph::Digraph;
+use core::fmt;
 
 /// How raw counts are mapped to the unit interval before coloring.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -12,6 +13,16 @@ pub enum Scale {
     /// Linear after clamping counts to `[0, high]` where `high` is the
     /// `p`-th percentile (0.0–1.0) of **non-zero** cells; zeros stay zero.
     ClipPercentile { p: f32 },
+}
+
+impl fmt::Display for Scale {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Scale::Linear => f.write_str("linear"),
+            Scale::Log1p => f.write_str("log1p"),
+            Scale::ClipPercentile { p } => write!(f, "clip p={p:.2}"),
+        }
+    }
 }
 
 impl Scale {
@@ -68,4 +79,24 @@ fn percentile_nonzero(digraph: &Digraph, p: f32) -> f32 {
     let idx = ((vals.len() as f32 - 1.0) * p).round() as usize;
     let idx = idx.min(vals.len() - 1);
     vals[idx] as f32
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Scale;
+    use crate::digraph::{Digraph, Mode};
+
+    #[test]
+    fn scale_clip_percentile() {
+        let mut d = Digraph::empty();
+        for _ in 0..100 {
+            d.add_bytes_with_mode(&[5, 5], Mode::Overlapping);
+        }
+        d.add_bytes_with_mode(&[9, 9], Mode::Overlapping);
+        let s = Scale::ClipPercentile { p: 0.5 };
+        let hi = s.clip_high(&d).unwrap();
+        assert!(hi >= 1.0);
+        let t = s.map(d.get(5, 5), d.max_count(), Some(hi));
+        assert!(t <= 1.0);
+    }
 }

@@ -38,16 +38,17 @@ pub fn render_svg_heatmap(digraph: &Digraph, params: SvgParams) -> String {
         r#"<rect width="100%" height="100%" fill="rgb(11,11,18)"/>"#
     );
 
-    for y in 0u16..256 {
-        for x in 0u16..256 {
-            let v = digraph.get(x as u8, y as u8);
+    // CantorDust `TwoTupleVisualizer`: rect at (second_byte, first_byte).
+    for first in 0u16..256 {
+        for second in 0u16..256 {
+            let v = digraph.get(first as u8, second as u8);
             if v == 0 {
                 continue;
             }
             let t = params.scale.map(v, max, clip);
             let [r, g, b, a] = params.palette.rgba(t);
-            let xf = x as f32 * cs;
-            let yf = y as f32 * cs;
+            let xf = second as f32 * cs;
+            let yf = first as f32 * cs;
             let opacity = (a as f32) / 255.0;
             let _ = writeln!(
                 &mut s,
