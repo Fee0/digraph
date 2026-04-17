@@ -1,7 +1,8 @@
 [package]
 name = "digraph"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
+rust-version = "1.74"
 description = "Byte-pair (digraph) histograms for binary visualization"
 
 [features]
@@ -19,9 +20,14 @@ serde_json = "1.0"
 
 [[example]]
 name = "from_file"
-path = "examples/png.rs"
+path = "examples/from_file.rs"
 required-features = ["image"]
 
 [[example]]
 name = "ascii_from_file"
-path = "examples/ascii.rs"
+path = "examples/ascii_from_file.rs"
+
+[[example]]
+name = "svg_from_file"
+path = "examples/svg.rs"
+required-features = ["svg"]
