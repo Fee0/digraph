@@ -9,7 +9,9 @@ use crate::palette::HeatmapPalette;
 pub struct RenderParams {
     /// Pixels per axis cell (image side = 256 * cell_pixels).
     pub cell_pixels: u32,
+    /// Count normalization strategy. Default is `CantorDust`.
     pub scale: Scale,
+    /// Palette applied after normalization.
     pub palette: HeatmapPalette,
 }
 

@@ -6,8 +6,11 @@ use std::fmt::Write as _;
 /// SVG heatmap: one `<rect>` per non-zero cell to keep files smaller.
 #[derive(Clone, Copy, Debug)]
 pub struct SvgParams {
+    /// SVG units per digraph cell (`viewBox` side is `256 * cell_size`).
     pub cell_size: f32,
+    /// Count normalization strategy. Default is `Log1p` for dense outputs.
     pub scale: Scale,
+    /// Palette applied after normalization.
     pub palette: HeatmapPalette,
 }
 

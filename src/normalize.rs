@@ -46,7 +46,7 @@ impl Scale {
                 }
             }
             Scale::Log1p => {
-                let ln1p_max = ((max as f64) + 1.0).ln_1p() as f32;
+                let ln1p_max = (max as f64).ln_1p() as f32;
                 if ln1p_max <= 0.0 {
                     0.0
                 } else {
@@ -121,5 +121,27 @@ mod tests {
         assert!((s.map(10, 10, None) - (60.0 / 255.0)).abs() < 1e-6);
         assert!((s.map(49, 10, None) - 1.0).abs() < 1e-6);
         assert!((s.map(10_000, 10, None) - 1.0).abs() < 1e-6);
+    }
+
+    #[test]
+    fn scale_log1p_uses_ln1p_max_denominator() {
+        let s = Scale::Log1p;
+        let max = 9;
+        let v = 3;
+        let expected = (v as f32 + 1.0).ln() / (max as f32 + 1.0).ln();
+        let actual = s.map(v, max, None);
+        assert!((actual - expected).abs() < 1e-6);
+    }
+
+    #[test]
+    fn scale_log1p_is_monotonic_and_capped() {
+        let s = Scale::Log1p;
+        let max = 100;
+        let a = s.map(1, max, None);
+        let b = s.map(10, max, None);
+        let c = s.map(100, max, None);
+        assert!(a > 0.0);
+        assert!(a < b && b < c);
+        assert!((c - 1.0).abs() < 1e-6);
     }
 }

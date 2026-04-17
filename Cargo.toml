@@ -19,15 +19,15 @@ serde = { version = "1.0", optional = true, features = ["derive"] }
 serde_json = "1.0"
 
 [[example]]
-name = "from_file"
-path = "examples/from_file.rs"
+name = "png"
+path = "examples/png.rs"
 required-features = ["image"]
 
 [[example]]
-name = "ascii_from_file"
-path = "examples/ascii_from_file.rs"
+name = "ascii"
+path = "examples/ascii.rs"
 
 [[example]]
-name = "svg_from_file"
+name = "svg"
 path = "examples/svg.rs"
 required-features = ["svg"]

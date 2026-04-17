@@ -62,11 +62,19 @@ impl Digraph {
         d
     }
 
-    /// Reads the entire stream into memory, then builds a digraph.
+    /// Reads a stream in chunks and builds a digraph incrementally.
     pub fn from_reader<R: Read>(mut reader: R, mode: Mode) -> IoResult<Self> {
-        let mut buf = Vec::new();
-        reader.read_to_end(&mut buf)?;
-        Ok(Self::from_bytes_with_mode(&buf, mode))
+        const CHUNK_SIZE: usize = 8192;
+        let mut builder = DigraphBuilder::new(mode);
+        let mut buf = [0u8; CHUNK_SIZE];
+        loop {
+            let read = reader.read(&mut buf)?;
+            if read == 0 {
+                break;
+            }
+            builder.push_bytes(&buf[..read]);
+        }
+        Ok(builder.finish())
     }
 
     /// Adds counts from `data` using [`Mode::Overlapping`].
@@ -92,9 +100,10 @@ impl Digraph {
         Self::LEN
     }
 
+    /// Returns `true` when the digraph has no observed pairs yet.
     #[inline]
     pub fn is_empty(&self) -> bool {
-        false
+        self.max_count == 0
     }
 
     /// Raw counts in row-major order: index `(x << 8) | y` for pair `(x, y)`.
@@ -163,6 +172,7 @@ pub struct DigraphBuilder {
 }
 
 impl DigraphBuilder {
+    /// Creates a streaming builder for the selected pairing mode.
     pub fn new(mode: Mode) -> Self {
         Self {
             digraph: Digraph::empty(),
@@ -170,19 +180,23 @@ impl DigraphBuilder {
         }
     }
 
+    /// Pairing mode used for all pushed chunks.
     pub fn mode(&self) -> Mode {
         self.stream.mode
     }
 
+    /// Adds a chunk while preserving continuity across chunk boundaries.
     pub fn push_bytes(&mut self, bytes: &[u8]) {
         self.stream
             .push(&mut self.digraph.counts, &mut self.digraph.max_count, bytes);
     }
 
+    /// Returns the accumulated digraph and consumes the builder.
     pub fn finish(self) -> Digraph {
         self.digraph
     }
 
+    /// Borrows the in-progress digraph for previews/telemetry.
     pub fn digraph_ref(&self) -> &Digraph {
         &self.digraph
     }
@@ -211,8 +225,31 @@ mod tests {
     fn empty_and_singleton() {
         let d = Digraph::from_bytes(&[]);
         assert_eq!(d.max_count(), 0);
+        assert!(d.is_empty());
         let d = Digraph::from_bytes(&[7]);
         assert_eq!(d.max_count(), 0);
+        assert!(d.is_empty());
+    }
+
+    #[test]
+    fn is_empty_tracks_observed_pairs() {
+        let mut d = Digraph::empty();
+        assert!(d.is_empty());
+        d.add_bytes_with_mode(&[1, 2], Mode::Overlapping);
+        assert!(!d.is_empty());
+    }
+
+    #[test]
+    fn from_reader_streams_across_chunks() {
+        use std::io::Cursor;
+
+        let bytes = vec![0, 1, 2, 3, 4, 5];
+        let d = Digraph::from_reader(Cursor::new(bytes), Mode::Overlapping).unwrap();
+        assert_eq!(d.get(0, 1), 1);
+        assert_eq!(d.get(1, 2), 1);
+        assert_eq!(d.get(2, 3), 1);
+        assert_eq!(d.get(3, 4), 1);
+        assert_eq!(d.get(4, 5), 1);
     }
 
     #[test]

@@ -12,6 +12,7 @@ pub struct AsciiParams {
     pub cols: u32,
     /// Output rows (each row aggregates a range of **first** bytes; top row is small first byte).
     pub rows: u32,
+    /// Count normalization strategy. Default is `CantorDust`.
     pub scale: Scale,
     /// Characters from dim to bright; must be non-empty when UTF-8 graphemes are counted.
     pub ramp: String,
