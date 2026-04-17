@@ -10,6 +10,11 @@ pub enum Scale {
     Linear,
     /// `ln(1 + v) / ln(1 + max)` (stable for heavy tails).
     Log1p,
+    /// CantorDust-style fixed ramp: `min + min(v * step, 255 - min)`, then `/ 255`.
+    ///
+    /// This mirrors the 2-tuple visualizer's channel ramp (`min = 10`, `step = 5`)
+    /// while keeping zero cells black.
+    CantorDust,
     /// Linear after clamping counts to `[0, high]` where `high` is the
     /// `p`-th percentile (0.0–1.0) of **non-zero** cells; zeros stay zero.
     ClipPercentile { p: f32 },
@@ -20,6 +25,7 @@ impl fmt::Display for Scale {
         match self {
             Scale::Linear => f.write_str("linear"),
             Scale::Log1p => f.write_str("log1p"),
+            Scale::CantorDust => f.write_str("cantordust"),
             Scale::ClipPercentile { p } => write!(f, "clip p={p:.2}"),
         }
     }
@@ -46,6 +52,13 @@ impl Scale {
                 } else {
                     (v as f64).ln_1p() as f32 / ln1p_max
                 }
+            }
+            Scale::CantorDust => {
+                let min = 10u32;
+                let step = 5u32;
+                let delta = v.saturating_mul(step).min(255 - min);
+                let channel = min + delta;
+                (channel as f32) / 255.0
             }
             Scale::ClipPercentile { .. } => {
                 let hi = clip_high.unwrap_or(max as f32).max(1.0);
@@ -98,5 +111,15 @@ mod tests {
         assert!(hi >= 1.0);
         let t = s.map(d.get(5, 5), d.max_count(), Some(hi));
         assert!(t <= 1.0);
+    }
+
+    #[test]
+    fn scale_cantordust_matches_fixed_ramp() {
+        let s = Scale::CantorDust;
+        assert_eq!(s.map(0, 10, None), 0.0);
+        assert!((s.map(1, 10, None) - (15.0 / 255.0)).abs() < 1e-6);
+        assert!((s.map(10, 10, None) - (60.0 / 255.0)).abs() < 1e-6);
+        assert!((s.map(49, 10, None) - 1.0).abs() < 1e-6);
+        assert!((s.map(10_000, 10, None) - 1.0).abs() < 1e-6);
     }
 }
