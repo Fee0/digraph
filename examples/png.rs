@@ -20,7 +20,7 @@ use std::fs::File;
 use std::path::PathBuf;
 
 fn default_input() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/data/sample.bin")
+    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/data/lore.txt")
 }
 
 fn default_output() -> PathBuf {

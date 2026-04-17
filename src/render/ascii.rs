@@ -22,7 +22,7 @@ impl Default for AsciiParams {
         Self {
             cols: 80,
             rows: 36,
-            scale: Scale::Log1p,
+            scale: Scale::CantorDust,
             ramp: " .:-=+*#%@".to_string(),
         }
     }

@@ -15,7 +15,7 @@ use std::env;
 use std::path::PathBuf;
 
 fn default_input() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/data/sample.bin")
+    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/data/lore.txt")
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -35,8 +35,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     );
 
     let params = AsciiParams {
-        cols: 80,
-        rows: 36,
+        cols: 150,
+        rows: 50,
         ..AsciiParams::default()
     };
     print!("{}", digraph.to_ascii(params));
