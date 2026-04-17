@@ -21,9 +21,9 @@ serde_json = "1.0"
 
 [[example]]
 name = "from_file"
-path = "examples/from_file.rs"
+path = "examples/png.rs"
 required-features = ["image"]
 
 [[example]]
 name = "ascii_from_file"
-path = "examples/ascii_from_file.rs"
+path = "examples/ascii.rs"

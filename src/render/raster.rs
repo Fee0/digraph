@@ -17,7 +17,7 @@ impl Default for RenderParams {
     fn default() -> Self {
         Self {
             cell_pixels: 2,
-            scale: Scale::Log1p,
+            scale: Scale::CantorDust,
             palette: HeatmapPalette::default(),
         }
     }
