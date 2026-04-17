@@ -2,9 +2,8 @@ use digraph::digraph::{Digraph, Mode};
 use digraph::normalize::Scale;
 
 #[test]
-fn linear_and_log1p_hit_unit_at_max() {
+fn log1p_hits_unit_at_max() {
     let max = 42;
-    assert!((Scale::Linear.map(max, max, None) - 1.0).abs() < 1e-6);
     assert!((Scale::Log1p.map(max, max, None) - 1.0).abs() < 1e-6);
 }
 

@@ -6,8 +6,6 @@ use core::fmt;
 /// How raw counts are mapped to the unit interval before coloring.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Scale {
-    /// `v / max` (or 0 if max is 0).
-    Linear,
     /// `ln(1 + v) / ln(1 + max)` (stable for heavy tails).
     Log1p,
     /// CantorDust-style fixed ramp: `min + min(v * step, 255 - min)`, then `/ 255`.
@@ -23,7 +21,6 @@ pub enum Scale {
 impl fmt::Display for Scale {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Scale::Linear => f.write_str("linear"),
             Scale::Log1p => f.write_str("log1p"),
             Scale::CantorDust => f.write_str("cantordust"),
             Scale::ClipPercentile { p } => write!(f, "clip p={p:.2}"),
@@ -38,13 +35,6 @@ impl Scale {
             return 0.0;
         }
         match self {
-            Scale::Linear => {
-                if max == 0 {
-                    0.0
-                } else {
-                    (v as f32) / (max as f32)
-                }
-            }
             Scale::Log1p => {
                 let ln1p_max = (max as f64).ln_1p() as f32;
                 if ln1p_max <= 0.0 {

@@ -110,7 +110,7 @@ mod tests {
             AsciiParams {
                 cols: 4,
                 rows: 2,
-                scale: Scale::Linear,
+                scale: Scale::Log1p,
                 ramp: ".@".to_string(),
             },
         );

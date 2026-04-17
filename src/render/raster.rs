@@ -95,7 +95,7 @@ mod tests {
             &d,
             RenderParams {
                 cell_pixels: 2,
-                scale: Scale::Linear,
+                scale: Scale::Log1p,
                 palette: HeatmapPalette::Magma,
             },
         );
