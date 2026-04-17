@@ -5,13 +5,13 @@
 mod ascii;
 mod raster;
 #[cfg(feature = "image")]
-mod image_png;
+mod png;
 pub use crate::palette::HeatmapPalette;
 pub use ascii::{render_ascii, AsciiParams};
 pub use raster::{render_rgba_pixels, RgbaPixmap, RenderParams};
 
 #[cfg(feature = "image")]
-pub use image_png::{render_png, render_rgba};
+pub use png::{render_png, render_rgba};
 
 #[cfg(feature = "svg")]
 mod svg;
