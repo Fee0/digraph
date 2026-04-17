@@ -56,7 +56,6 @@ pub fn render_ascii(digraph: &Digraph, params: AsciiParams) -> String {
     };
 
     let max = digraph.max_count();
-    let clip = params.scale.clip_high(digraph);
     let last = ramp.len() - 1;
 
     let mut out = String::with_capacity((cols as usize + 1) * rows as usize);
@@ -70,7 +69,7 @@ pub fn render_ascii(digraph: &Digraph, params: AsciiParams) -> String {
             let ch = if max == 0 || v == 0 {
                 ramp[0]
             } else {
-                let t = params.scale.map(v, max, clip);
+                let t = params.scale.map(v, max);
                 let idx = ((t * last as f32).round() as usize).min(last);
                 ramp[idx]
             };

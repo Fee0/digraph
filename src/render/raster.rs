@@ -50,13 +50,12 @@ pub fn render_rgba_pixels(digraph: &Digraph, params: RenderParams) -> RgbaPixmap
     let stride = side * 4;
     let mut rgba = vec![0u8; side * side * 4];
     let max = digraph.max_count();
-    let clip = params.scale.clip_high(digraph);
 
     // CantorDust `TwoTupleVisualizer`: pixel at (second_byte, first_byte) on screen.
     for first in 0u16..256 {
         for second in 0u16..256 {
             let v = digraph.get(first as u8, second as u8);
-            let t = params.scale.map(v, max, clip);
+            let t = params.scale.map(v, max);
             let [r, g, b, a] = params.palette.rgba(t);
             let xi = second as usize * cell;
             let yi = first as usize * cell;

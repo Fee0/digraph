@@ -29,7 +29,6 @@ pub fn render_svg_heatmap(digraph: &Digraph, params: SvgParams) -> String {
     let cs = params.cell_size.max(0.5);
     let side = 256.0 * cs;
     let max = digraph.max_count();
-    let clip = params.scale.clip_high(digraph);
 
     let mut s = String::new();
     let _ = writeln!(
@@ -48,7 +47,7 @@ pub fn render_svg_heatmap(digraph: &Digraph, params: SvgParams) -> String {
             if v == 0 {
                 continue;
             }
-            let t = params.scale.map(v, max, clip);
+            let t = params.scale.map(v, max);
             let [r, g, b, a] = params.palette.rgba(t);
             let xf = second as f32 * cs;
             let yf = first as f32 * cs;
