@@ -24,7 +24,7 @@ Sequential byte pairs `(b[i], b[i+1])` form a compact “fingerprint” of raw d
 
 ```toml
 [dependencies]
-digraph = { path = "." }   # or version from crates.io when published
+digraph = { path = "https://github.com/Fee0/digraph.git" }
 ```
 
 ```rust
