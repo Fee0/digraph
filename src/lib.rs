@@ -9,19 +9,18 @@
 //!
 //! # Example
 //!
-//! ```
-//! use digraph::{Digraph, DigraphBuilder, Mode};
+//! Read a file and write a PNG heatmap (`image` feature required for [`Digraph::to_png`](Digraph::to_png)):
 //!
-//! let d = Digraph::from_bytes_with_mode(&[0, 1, 2], Mode::Overlapping);
-//! assert_eq!(d.get(0, 1), 1);
-//! assert_eq!(d.get(1, 2), 1);
+//! ```ignore
+//! use digraph::{Digraph, Mode, RenderParams};
+//! use std::fs::File;
 //!
-//! let mut b = DigraphBuilder::new(Mode::Overlapping);
-//! b.push_bytes(&[0, 1]);
-//! b.push_bytes(&[1, 2]);
-//! let d2 = b.finish();
-//! assert_eq!(d2.get(0, 1), 1);
-//! assert_eq!(d2.get(1, 2), 1);
+//! fn main() -> Result<(), Box<dyn std::error::Error>> {
+//!     let bytes = std::fs::read("input.bin")?;
+//!     let d = Digraph::from_bytes_with_mode(&bytes, Mode::Overlapping);
+//!     d.to_png(RenderParams::default(), File::create("digraph.png")?)?;
+//!     Ok(())
+//! }
 //! ```
 //!
 //! # Render API Guide
