@@ -20,31 +20,25 @@ Sequential byte pairs `(b[i], b[i+1])` form a compact “fingerprint” of raw d
 - **Rendering**: terminal ASCII heatmap, raw RGBA pixmap, PNG (`image` feature) and SVG (`svg` feature).
 - **Optional** `serde` for serializing `Digraph` / `Mode`.
 
-## Quick start
+## Example
+
+Read a file, build the digraph, write a PNG (`image` feature required for `to_png`):
 
 ```toml
 [dependencies]
-digraph = { path = "https://github.com/Fee0/digraph.git" }
+digraph = { version = "0.1", features = ["image"] }
 ```
-
-```rust
-use digraph::{AsciiParams, Digraph, Mode};
-
-fn main() {
-    let d = Digraph::from_bytes_with_mode(b"hello world", Mode::Overlapping);
-    let ascii = d.to_ascii(AsciiParams::default());
-    println!("{ascii}");
-}
-```
-
-With default features you can also rasterize without the `image` crate:
 
 ```rust
 use digraph::{Digraph, Mode, RenderParams};
+use std::fs::File;
 
-let d = Digraph::from_bytes_with_mode(b"hello", Mode::Overlapping);
-let pixmap = d.to_rgba_pixels(RenderParams::default());
-assert_eq!(pixmap.width, pixmap.height);
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let bytes = std::fs::read("input.bin")?;
+    let d = Digraph::from_bytes_with_mode(&bytes, Mode::Overlapping);
+    d.to_png(RenderParams::default(), File::create("digraph.png")?)?;
+    Ok(())
+}
 ```
 
 ## Features
@@ -55,19 +49,6 @@ assert_eq!(pixmap.width, pixmap.height);
 | `image`  | PNG helpers, `RgbaImage` via `image` |
 | `svg`    | SVG heatmap strings |
 | `serde`  | `Serialize` / `Deserialize` on core types |
-
-## Examples (from repo root) 
-
-```powershell
-cargo run --example ascii
-cargo run --example ascii -- path/to/file.bin
-
-cargo run --example png --features image
-cargo run --example png --features image -- path/to/file.bin out.png viridis
-
-cargo run --example svg --features svg
-cargo run --example svg --features svg -- path/to/file.bin out.svg viridis
-```
 
 ## Further reading
 
