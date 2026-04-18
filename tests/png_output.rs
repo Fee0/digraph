@@ -1,7 +1,7 @@
 #![cfg(feature = "image")]
 
 use digraph::{Digraph, Mode};
-use digraph::render::RenderParams;
+use digraph::RenderParams;
 
 #[test]
 fn png_places_pair_at_expected_coordinates() {

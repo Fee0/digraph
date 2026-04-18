@@ -2,10 +2,10 @@
 //! `(b[i], b[i+1])` to a 256×256 grid and count occurrences. Cells are keyed as
 //! [`Digraph::get`](crate::Digraph::get)`(first, second)` (first byte of the pair, then second).
 //! Heatmaps are drawn **CantorDust-style**: image column = second byte, row = first byte
-//! (same convention as Ghidra CantorDust two-tuple view). [`render::render_ascii`](crate::render::render_ascii)
-//! draws a downsampled terminal heatmap (tone via [`AsciiParams::ramp`](crate::render::AsciiParams));
-//! PNG/SVG use [`HeatmapPalette`](crate::HeatmapPalette); [`render::render_rgba_pixels`](crate::render::render_rgba_pixels)
-//! builds a raw [`RgbaPixmap`](crate::render::RgbaPixmap) without the `image` crate. Enable `image` / `svg` for PNG/SVG.
+//! (same convention as Ghidra CantorDust two-tuple view). [`render_ascii`](crate::render_ascii)
+//! draws a downsampled terminal heatmap (tone via [`AsciiParams::ramp`](crate::AsciiParams));
+//! PNG/SVG use [`HeatmapPalette`](crate::HeatmapPalette); [`render_rgba_pixels`](crate::render_rgba_pixels)
+//! builds a raw [`RgbaPixmap`](crate::RgbaPixmap) without the `image` crate. Enable `image` / `svg` for PNG/SVG.
 //!
 //! # Example
 //!
@@ -26,32 +26,36 @@
 //!
 //! # Render API Guide
 //!
-//! - `Digraph::to_rgba_pixels` / [`render::render_rgba_pixels`](crate::render::render_rgba_pixels):
-//!   returns a crate-native [`RgbaPixmap`](crate::render::RgbaPixmap) and requires no features.
-//! - `Digraph::to_rgba` / [`render::render_rgba`](crate::render::render_rgba): returns
+//! - `Digraph::to_rgba_pixels` / [`render_rgba_pixels`](crate::render_rgba_pixels):
+//!   returns a crate-native [`RgbaPixmap`](crate::RgbaPixmap) and requires no features.
+//! - `Digraph::to_rgba` / [`render_rgba`](crate::render_rgba): returns
 //!   `image::RgbaImage` (`feature = "image"`).
-//! - `Digraph::to_png` / [`render::render_png`](crate::render::render_png): writes PNG
+//! - `Digraph::to_png` / [`render_png`](crate::render_png): writes PNG
 //!   bytes to any `Write + Seek` sink (`feature = "image"`).
-//! - `Digraph::to_svg_heatmap` / [`render::render_svg_heatmap`](crate::render::render_svg_heatmap):
+//! - `Digraph::to_svg_heatmap` / [`render_svg_heatmap`](crate::render_svg_heatmap):
 //!   returns an SVG document string (`feature = "svg"`).
 //!
-//! ASCII and raster defaults use [`normalize::Scale::CantorDust`](crate::normalize::Scale::CantorDust),
-//! while SVG defaults to [`normalize::Scale::Log1p`](crate::normalize::Scale::Log1p) for denser
+//! ASCII and raster defaults use [`Scale::CantorDust`](crate::Scale::CantorDust),
+//! while SVG defaults to [`Scale::Log1p`](crate::Scale::Log1p) for denser
 //! documents. Set `scale` explicitly in params if you need cross-output consistency.
 
 mod accumulate;
 #[cfg(feature = "image")]
 mod error;
+mod digraph;
+mod normalize;
+mod palette;
+mod render;
 
-pub mod digraph;
-pub mod normalize;
-pub mod palette;
-
+pub use digraph::{Digraph, DigraphBuilder, Mode};
+pub use normalize::Scale;
 pub use palette::HeatmapPalette;
-
-pub mod render;
+pub use render::{render_ascii, AsciiParams, render_rgba_pixels, RgbaPixmap, RenderParams};
 
 #[cfg(feature = "image")]
 pub use error::RenderError;
+#[cfg(feature = "image")]
+pub use render::{render_png, render_rgba};
 
-pub use digraph::{Digraph, DigraphBuilder, Mode};
+#[cfg(feature = "svg")]
+pub use render::{render_svg_heatmap, SvgParams};

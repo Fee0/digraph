@@ -1,7 +1,7 @@
 #![cfg(feature = "svg")]
 
 use digraph::{Digraph, Mode};
-use digraph::render::SvgParams;
+use digraph::SvgParams;
 
 #[test]
 fn svg_contains_exact_rect_coordinates() {

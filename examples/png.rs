@@ -13,7 +13,7 @@
 //! cargo run --example from_file --features image -- path/to/file.bin out.png viridis
 //! ```
 
-use digraph::render::RenderParams;
+use digraph::RenderParams;
 use digraph::{Digraph, HeatmapPalette, Mode};
 use std::env;
 use std::fs::File;

@@ -9,7 +9,7 @@
 //! cargo run --example ascii_from_file -- path/to/file.bin
 //! ```
 
-use digraph::render::AsciiParams;
+use digraph::AsciiParams;
 use digraph::{Digraph, Mode};
 use std::env;
 use std::path::PathBuf;

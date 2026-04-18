@@ -12,7 +12,7 @@
 //! cargo run --example svg_from_file --features svg -- path/to/file.bin out.svg viridis
 //! ```
 
-use digraph::render::SvgParams;
+use digraph::SvgParams;
 use digraph::{Digraph, HeatmapPalette, Mode};
 use std::env;
 use std::path::PathBuf;

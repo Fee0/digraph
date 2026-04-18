@@ -6,7 +6,6 @@ mod ascii;
 mod raster;
 #[cfg(feature = "image")]
 mod png;
-pub use crate::palette::HeatmapPalette;
 pub use ascii::{render_ascii, AsciiParams};
 pub use raster::{render_rgba_pixels, RgbaPixmap, RenderParams};
 

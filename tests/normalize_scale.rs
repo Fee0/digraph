@@ -1,4 +1,4 @@
-use digraph::normalize::Scale;
+use digraph::Scale;
 
 #[test]
 fn log1p_hits_unit_at_max() {

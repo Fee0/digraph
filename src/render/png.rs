@@ -1,6 +1,6 @@
 use crate::digraph::Digraph;
 use crate::error::RenderError;
-use crate::render::raster::{render_rgba_pixels, RenderParams};
+use crate::render::{render_rgba_pixels, RenderParams};
 use image::{ImageBuffer, RgbaImage};
 
 /// RGBA image buffer (`width` = `height` = 256 * cell_pixels).
