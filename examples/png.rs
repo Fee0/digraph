@@ -62,7 +62,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     let bytes = std::fs::read(&input)?;
-    let digraph = Digraph::from_bytes_with_mode(&bytes, Mode::Overlapping);
+    let digraph = Digraph::from_bytes_with_mode(&bytes, Mode::NonOverlapping);
 
     eprintln!(
         "read {} bytes from {}; max cell count = {}; palette = {:?}",
